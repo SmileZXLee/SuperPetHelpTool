@@ -13,10 +13,29 @@
 				"enablePullDownRefresh": true
 			}
         }
+        ,{
+            "path" : "pages/friendList/friendList",
+            "style" : {
+				"navigationBarTitleText": "好友列表",
+				"app-plus": {
+				    "titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+				            {
+								"type":"",
+				           		"text":"✋",
+				           		"float":"right",
+								"fontSize":22
+							}
+				        ]
+				    }
+				}
+			}
+			
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "",
 		"navigationBarBackgroundColor": "#464650",
 		"backgroundColor": "#F8F8F8"
 	}

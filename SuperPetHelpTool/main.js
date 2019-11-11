@@ -20,6 +20,8 @@ Vue.prototype.gameUrl = 'https://qqpet.jwetech.com/api/minigames';
 Vue.prototype.getCoinsUrl = 'https://qqpet.jwetech.com/api/counters';
 //宠物喂养
 Vue.prototype.feedUrl = 'https://qqpet.jwetech.com/api/pet_feeds';
+//获取好友列表
+Vue.prototype.friendListUrl = 'https://qqpet.jwetech.com/api/rankings';
 Vue.prototype.userInfo = function(){
 	return {
 		openid: uni.getStorageSync('openid'),
@@ -78,7 +80,15 @@ Vue.prototype.userLogin = function(openidValue,openkeyValue,callback){
 	                	callback(false,res.data);
 	                }
 	            }
-	        }
+	        },
+			fail: (err) => {
+				uni.hideLoading();
+				uni.showToast({
+				    icon: 'none',
+				    title: '登录失败，错误信息为：' + err.errMsg,
+				    position: 'bottom'
+				})
+			}
 	});
 }
 
@@ -93,96 +103,115 @@ Vue.prototype.userAutoLogin = function(callback){
 }
 
 Vue.prototype.requestUserInfo = function(callback){
-	uni.request({
-	        url: this.userInfoUrl,
-	        header: {
-	            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 QQ/8.1.8.429 V1_IPH_SQ_8.1.8_1_APP_A Pixel/1080 Core/WKWebView Device/Apple(iPhone 8Plus) NetType/4G QBWebViewType/1 WKType/1',
-	            'x-game-version': '5.311.0820',
-				'Authorization': 'Bearer ' + uni.getStorageSync(this.token)
-	        },
-	        success: (res) => {
-	            if(res.statusCode == 200){
-					utils.updateUserInfo(null,null,res.data.token,res.data.id,res.data.nick,res.data.avatar,res.data.coins,res.data.pet.level,res.data.pet.expirenece);
-	            }else{
-	                uni.showToast({
-	                    icon: 'none',
-	                    title: '用户信息获取失败，错误信息为：' + res.data.message,
-	                    position: 'bottom'
-	                })
-	            }
-				if(callback){
-					callback(res.statusCode == 200,res.data);
-				}
-	        }
+	Vue.prototype.baseRequest(this.userInfoUrl,'GET',{},'',function(success,res){
+		if(success){
+			utils.updateUserInfo(null,null,res.data.token,res.data.id,res.data.nick,res.data.avatar,res.data.coins,res.data.pet.level,res.data.pet.expirenece);
+		}else{
+		    uni.showToast({
+		        icon: 'none',
+		        title: '用户信息获取失败，错误信息为：' + res.data.message,
+		        position: 'bottom'
+		    })
+		}
+		if(callback){
+			callback(success,res.data);
+		}
 	});
 }
 
 Vue.prototype.getCoins = function(callback){
-	uni.request({
-	        url: this.getCoinsUrl,
-			method: 'POST',
-	        header: {
-	            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 QQ/8.1.8.429 V1_IPH_SQ_8.1.8_1_APP_A Pixel/1080 Core/WKWebView Device/Apple(iPhone 8Plus) NetType/4G QBWebViewType/1 WKType/1',
-	            'x-game-version': '5.311.0820',
-				'Authorization': 'Bearer ' + uni.getStorageSync(this.token)
-	        },
-			data: {
-				userId: uni.getStorageSync('id'),
-				ad: true
-			},
-	        success: (res) => {
-	            if(res.statusCode == 200){
-					utils.updateUserInfo(null,null,null,null,null,null,res.data.coins,null,null);
-					uni.showToast({
-					    icon: 'none',
-					    title: '成功收取' + res.data.collected + '个金币',
-					    position: 'bottom'
-					})
-	            }else{
-	                uni.showToast({
-	                    icon: 'none',
-	                    title: '收取金币失败，错误信息为：' + res.data.message,
-	                    position: 'bottom'
-	                })
-	            }
-				if(callback){
-					callback(res.statusCode == 200,res.data);
-				}
-	        }
+	Vue.prototype.baseRequest(this.getCoinsUrl,'POST',{userId:uni.getStorageSync('id'),ad:true},'收取中...',function(success,res){
+		if(success){
+			utils.updateUserInfo(null,null,null,null,null,null,res.data.coins,null,null);
+			uni.showToast({
+			    icon: 'none',
+			    title: '成功收取' + res.data.collected + '个金币',
+			    position: 'bottom'
+			})
+		}else{
+		    uni.showToast({
+		        icon: 'none',
+		        title: '收取金币失败，错误信息为：' + res.data.message,
+		        position: 'bottom'
+		    })
+		}
+		if(callback){
+			callback(success,res.data);
+		}
 	});
 }
 
 Vue.prototype.feed = function(callback){
+	Vue.prototype.baseRequest(this.feedUrl,'POST',{foodId:2,ad:true},'喂食中...',function(success,res){
+		if(success){
+			uni.showToast({
+			    icon: 'none',
+			    title: '喂食成功，经验值+4！' ,
+			    position: 'bottom'
+			})
+		}else{
+		    uni.showToast({
+		        icon: 'none',
+		        title: '喂食失败，错误信息为：' + res.data.message,
+		        position: 'bottom'
+		    })
+		}
+		if(callback){
+			callback(success,res.data);
+		}
+	});
+}
+
+Vue.prototype.baseRequest = function(url,method,data,loadingStr,callback){
+	if(loadingStr.length){
+		uni.showLoading({
+			title: loadingStr
+		});
+	}
+	var header = {'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 QQ/8.1.8.429 V1_IPH_SQ_8.1.8_1_APP_A Pixel/1080 Core/WKWebView Device/Apple(iPhone 8Plus) NetType/4G QBWebViewType/1 WKType/1','x-game-version': '5.311.0820'};
+	var token = uni.getStorageSync(this.token);
+	if(token){
+		header['Authorization'] = 'Bearer ' + token;
+	}
 	uni.request({
-	        url: this.feedUrl,
-			method: 'POST',
-	        header: {
-	            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 QQ/8.1.8.429 V1_IPH_SQ_8.1.8_1_APP_A Pixel/1080 Core/WKWebView Device/Apple(iPhone 8Plus) NetType/4G QBWebViewType/1 WKType/1',
-	            'x-game-version': '5.311.0820',
-				'Authorization': 'Bearer ' + uni.getStorageSync(this.token)
-	        },
-			data: {
-				foodId: 3,
-				ad: true
-			},
+	        url: url,
+			method: method.toUpperCase(),
+	        header: header,
+			data: data,
 	        success: (res) => {
-	            if(res.statusCode == 200){
-					uni.showToast({
-					    icon: 'none',
-					    title: '喂食成功，经验值+4！' ,
-					    position: 'bottom'
-					})
-	            }else{
-	                uni.showToast({
-	                    icon: 'none',
-	                    title: '喂食失败，错误信息为：' + res.data.message,
-	                    position: 'bottom'
-	                })
-	            }
+				uni.hideLoading();
 				if(callback){
-					callback(res.statusCode == 200,res.data);
+					callback(res.statusCode == 200,res);
 				}
-	        }
+	        },
+			fail: (err)=> {
+				uni.hideLoading();
+				uni.showToast({
+				    icon: 'none',
+				    title: '网络错误，错误信息为：' + err.errMsg,
+				    position: 'bottom'
+				})
+				if(callback){
+					callback(false,err);
+				}
+			}
+	});
+}
+
+Vue.prototype.requestFriendList = function(callback){
+	Vue.prototype.baseRequest(this.friendListUrl,'GET',{},'获取好友列表...',function(success,res){
+		if(success){
+			
+		}else{
+		    uni.showToast({
+		        icon: 'none',
+		        title: '好友列表获取失败，错误信息为：' + res.data.message,
+		        position: 'bottom'
+		    })
+		}
+		if(callback){
+			callback(success,res.data);
+		}
 	});
 }
 

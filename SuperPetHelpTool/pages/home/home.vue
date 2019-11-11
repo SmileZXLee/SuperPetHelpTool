@@ -117,11 +117,21 @@
 						break;
 				    }
 					case 2:{
-						
+						alert('暂不支持');
 						break;
 					}
 					case 3:{
 						this.prePostGameData(420);
+						break;
+					}
+					case 4:{
+						uni.navigateTo({
+							url: '../friendList/friendList'
+						})
+						break;
+					}
+					case 5:{
+						alert('暂不支持');
 						break;
 					}
 				    default:

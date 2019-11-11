@@ -3,7 +3,7 @@
 		<image class="logo" src="/static/main-icon.png"></image>
 		<input class="openid-input main-text-color" v-model="openidValue" type="text" value="" placeholder="请输入openid"/>
 		<input class="openkey-input main-text-color" v-model="openkeyValue" type="text" value="" placeholder="请输入openkey"/>
-		<text class="notice-text">如何获取？<span class="text-gray">使用手机抓包工具，进入QQ超级萌宠，选择链接为https://qqpet.jwetech.com/api/authorizations的请求，查看请求体，复制请求体中的openid和openkey即可</span></text>
+		<text class="notice-text">如何获取？<text class="text-gray">使用手机抓包工具，进入QQ超级萌宠，选择链接为https://qqpet.jwetech.com/api/authorizations的请求，查看请求体，复制请求体中的openid和openkey即可</text></text>
 		<button class="login-btn main-bac-color" @click="login">登录</button>
 	</view>
 </template>
